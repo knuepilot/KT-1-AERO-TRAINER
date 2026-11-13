@@ -1,0 +1,48 @@
+name: Build KT-1 AERO TRAINER APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          unzip -q KT-1_AERO_TRAINER_Android_Project.zip -d .
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Download Three.js
+        run: |
+          curl -L --fail https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js \
+          -o KT-1_AERO_TRAINER/app/src/main/assets/three.min.js
+
+      - name: Build APK
+        run: |
+          cd KT-1_AERO_TRAINER
+          gradle --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: KT-1-AERO-TRAINER-APK
+          path: KT-1_AERO_TRAINER/app/build/outputs/apk/debug/app-debug.apk
